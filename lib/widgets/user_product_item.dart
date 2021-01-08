@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/products_provider.dart';
 import '../screens/edit_product_screen.dart';
 
-class UserProductItem extends StatelessWidget {
+class UserProductItem extends StatefulWidget {
   final String id;
   final String title;
   final String imageURL;
@@ -15,11 +15,64 @@ class UserProductItem extends StatelessWidget {
   );
 
   @override
+  _UserProductItemState createState() => _UserProductItemState();
+}
+
+class _UserProductItemState extends State<UserProductItem> {
+  var _isLoading = false;
+
+  Future<void> _deleteProduct() async {
+    final scaffold = Scaffold.of(context);
+    return showDialog(
+      //add await here replace the return
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Are you sure?'),
+        content: Text('Do you want to remove item from the cart ?'),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('No'),
+            onPressed: () {
+              Navigator.of(ctx).pop(false);
+            },
+          ),
+          FlatButton(
+            child: Text('Yes'),
+            onPressed: () async {
+              Navigator.of(ctx).pop(true);
+              try {
+                await Provider.of<ProductsProvider>(
+                  context,
+                  listen: false,
+                ).deleteProduct(widget.id);
+                scaffold.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Successfully deleted',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              } catch (err) {
+                scaffold.showSnackBar(
+                  SnackBar(
+                    content: Text('Cannot delete'),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(title),
+      title: Text(widget.title),
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(imageURL),
+        backgroundImage: NetworkImage(widget.imageURL),
       ),
       trailing: Container(
         width: 100,
@@ -33,20 +86,16 @@ class UserProductItem extends StatelessWidget {
                 onPressed: () {
                   Navigator.of(context).pushNamed(
                     EditProductScreen.routeName,
-                    arguments: id,
+                    arguments: widget.id,
                   );
                 }),
             IconButton(
-                icon: Icon(
-                  Icons.delete,
-                  color: Theme.of(context).errorColor,
-                ),
-                onPressed: () {
-                  Provider.of<ProductsProvider>(
-                    context,
-                    listen: false,
-                  ).deleteProduct(id);
-                })
+              icon: Icon(
+                Icons.delete,
+                color: Theme.of(context).errorColor,
+              ),
+              onPressed: _deleteProduct,
+            ),
           ],
         ),
       ),

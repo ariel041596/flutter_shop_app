@@ -17,30 +17,38 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 5,
-      ),
-      child: Column(
-        children: <Widget>[
-          ListTile(
-            title: Text('\P${widget.order.amount}'),
-            subtitle: Text(
-              DateFormat('MM-dd-yyyy hh:mm').format(widget.order.dateTime),
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.ease,
+      height:
+          _expanded ? min(widget.order.products.length * 20.0 + 180, 280) : 90,
+      child: Card(
+        margin: EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 5,
+        ),
+        child: Column(
+          children: <Widget>[
+            ListTile(
+              title: Text('\P${widget.order.amount}'),
+              subtitle: Text(
+                DateFormat('MM-dd-yyyy hh:mm').format(widget.order.dateTime),
+              ),
+              trailing: IconButton(
+                icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+                onPressed: () {
+                  setState(() {
+                    _expanded = !_expanded;
+                  });
+                },
+              ),
             ),
-            trailing: IconButton(
-              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-              onPressed: () {
-                setState(() {
-                  _expanded = !_expanded;
-                });
-              },
-            ),
-          ),
-          if (_expanded)
-            Container(
-              height: min(widget.order.products.length * 20.0 + 80, 180),
+            AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.ease,
+              height: _expanded
+                  ? min(widget.order.products.length * 20.0 + 80, 180)
+                  : 0,
               child: ListView(
                 children: widget.order.products
                     .map(
@@ -51,6 +59,7 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
+                            //theres error there
                             Text(
                               product.title,
                               style: TextStyle(
@@ -71,7 +80,8 @@ class _OrderItemWidgetState extends State<OrderItemWidget> {
                     .toList(),
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

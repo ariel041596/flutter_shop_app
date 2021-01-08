@@ -15,68 +15,100 @@ class CartScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('My Cart'),
       ),
-      body: Column(
-        children: <Widget>[
-          Card(
-            margin: EdgeInsets.all(10),
-            child: Padding(
-              padding: EdgeInsets.all(8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  Text(
-                    'Total',
-                    style: TextStyle(
-                      fontSize: 20,
+      body: cart.items.length <= 0
+          ? Center(
+              child: Text('No items on cart'),
+            )
+          : Column(
+              children: <Widget>[
+                Card(
+                  margin: EdgeInsets.all(10),
+                  child: Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        Text(
+                          'Total',
+                          style: TextStyle(
+                            fontSize: 20,
+                          ),
+                        ),
+                        Spacer(),
+                        Chip(
+                          label: Text(
+                            '\P${cart.totalAmount.toStringAsFixed(2)}',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          backgroundColor: Theme.of(context).primaryColor,
+                        ),
+                        OrderButton(cart: cart),
+                      ],
                     ),
                   ),
-                  Spacer(),
-                  Chip(
-                    label: Text(
-                      '\P${cart.totalAmount.toStringAsFixed(2)}',
-                      style: TextStyle(color: Colors.white),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemBuilder: (context, index) => CartItemWidget(
+                      cart.items.values.toList()[index].id,
+                      cart.items.values.toList()[index].price,
+                      cart.items.values.toList()[index].quantity,
+                      cart.items.values.toList()[index].title,
+                      cart.items.keys.toList()[index],
                     ),
-                    backgroundColor: Theme.of(context).primaryColor,
+                    itemCount: cart.items.length,
                   ),
-                  FlatButton(
-                    onPressed: () {
-                      Provider.of<OrdersProvider>(
-                        context,
-                        listen: false,
-                      ).addOrder(
-                        cart.items.values.toList(),
-                        cart.totalAmount,
-                      );
-                      cart.clearCart();
+                ),
+              ],
+            ),
+    );
+  }
+}
 
-                      Navigator.of(context)
-                          .pushNamed(OrdersScreen.routeName, arguments: {
-                        // 'id': cart
-                      });
-                    },
-                    child: Text('Order Now'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemBuilder: (context, index) => CartItemWidget(
-                cart.items.values.toList()[index].id,
-                cart.items.values.toList()[index].price,
-                cart.items.values.toList()[index].quantity,
-                cart.items.values.toList()[index].title,
-                cart.items.keys.toList()[index],
-              ),
-              itemCount: cart.items.length,
-            ),
-          ),
-        ],
-      ),
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+    @required this.cart,
+  }) : super(key: key);
+
+  final CartProvider cart;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  var _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      onPressed: (widget.cart.totalAmount <= 0 || _isLoading)
+          ? null
+          : () async {
+              setState(() {
+                _isLoading = true;
+              });
+              await Provider.of<OrdersProvider>(
+                context,
+                listen: false,
+              ).addOrder(
+                widget.cart.items.values.toList(),
+                widget.cart.totalAmount,
+              );
+              setState(() {
+                _isLoading = false;
+              });
+              widget.cart.clearCart();
+
+              Navigator.of(context)
+                  .pushNamed(OrdersScreen.routeName, arguments: {
+                // 'id': cart
+              });
+            },
+      child: _isLoading ? CircularProgressIndicator() : Text('Order Now'),
     );
   }
 }

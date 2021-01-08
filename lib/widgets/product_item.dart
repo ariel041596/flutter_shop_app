@@ -3,6 +3,7 @@ import '../screens/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/product.dart';
 import '../providers/cart_provider.dart';
+import '../providers/auth_provider.dart';
 
 class ProductItem extends StatelessWidget {
   // final String id;
@@ -31,6 +32,10 @@ class ProductItem extends StatelessWidget {
       context,
       listen: false,
     );
+    final auth = Provider.of<AuthProvider>(
+      context,
+      listen: false,
+    );
     return ClipRRect(
       borderRadius: BorderRadius.circular(5),
       child: GridTile(
@@ -42,9 +47,15 @@ class ProductItem extends StatelessWidget {
               'title': product.title,
             }),
           },
-          child: Image.network(
-            product.imageURL,
-            fit: BoxFit.cover,
+          child: Hero(
+            tag: product.id,
+            child: FadeInImage(
+              placeholder: AssetImage(
+                'assets/images/product-placeholder.png',
+              ),
+              image: NetworkImage(product.imageURL),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         header: Container(
@@ -70,12 +81,12 @@ class ProductItem extends StatelessWidget {
               ),
               color: Theme.of(context).errorColor,
               onPressed: () {
-                product.toggleFavoriteStatus();
+                product.toggleFavoriteStatus(auth.token, auth.userID);
               },
             ),
           ),
           title: Text(
-            product.price.toString(),
+            '\P${product.price.toString()}',
             textAlign: TextAlign.center,
           ),
           trailing: IconButton(

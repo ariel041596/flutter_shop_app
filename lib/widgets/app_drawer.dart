@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../screens/orders_screen.dart';
 import '../screens/user_product_screen.dart';
+import '../providers/auth_provider.dart';
 
 class AppDrawer extends StatelessWidget {
   @override
@@ -13,17 +15,30 @@ class AppDrawer extends StatelessWidget {
           //   automaticallyImplyLeading: false,
           // ),
           Container(
-            height: 90,
+            height: 100,
             width: double.infinity,
             padding: EdgeInsets.all(20),
             alignment: Alignment.bottomLeft,
             color: Theme.of(context).primaryColor,
-            child: Text(
-              'Shopilore',
-              style: TextStyle(
-                fontSize: 24,
-                color: Colors.white,
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Shopilore',
+                  style: TextStyle(
+                    fontSize: 22,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  Provider.of<AuthProvider>(context, listen: false).userEmail,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ),
           ListTile(
@@ -47,6 +62,15 @@ class AppDrawer extends StatelessWidget {
             onTap: () {
               Navigator.of(context)
                   .pushReplacementNamed(UserProductScreen.routeName);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.logout),
+            title: Text('Logout'),
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushReplacementNamed('/');
+              Provider.of<AuthProvider>(context, listen: false).signOut();
             },
           ),
         ],
